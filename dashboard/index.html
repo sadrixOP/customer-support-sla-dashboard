@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Customer Support & SLA Analytics — BI Dashboard</title>
+<style>
+  :root {
+    --bg: #0b1120; --card: #111827; --border: #1f2937;
+    --text: #f8fafc; --muted: #94a3b8;
+    --blue: #38bdf8; --green: #10b981; --amber: #f59e0b; --red: #ef4444; --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { margin: 0; background: var(--bg); color: var(--text); padding: 24px; }
+  .container { max-width: 1320px; margin: 0 auto; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  h1 { margin: 0; font-size: 22px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .badge { background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: var(--blue); }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 22px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--blue); border-radius: 8px; padding: 16px; }
+  .kpi.green { border-top-color: var(--green); } .kpi.amber { border-top-color: var(--amber); } .kpi.purple { border-top-color: var(--purple); }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .kpi-val { font-size: 28px; font-weight: 700; margin: 6px 0 4px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+  @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+  .card h2 { font-size: 15px; margin: 0 0 14px; color: #e2e8f0; }
+  .bar-row { margin-bottom: 10px; }
+  .bar-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .bar-track { height: 10px; background: #1e293b; border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  .pill { padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .pill-ok { background: rgba(16,185,129,0.15); color: var(--green); }
+  .pill-warn { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .pill-bad { background: rgba(239,68,68,0.15); color: var(--red); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>Customer Support &amp; SLA Analytics Dashboard</h1>
+      <div class="subtitle">SQLite SQL Queries + Python Pandas ETL | Looker Studio / Tableau Public Source View</div>
+    </div>
+    <div class="badge">Dataset: 1,200 Operations &amp; Telecom Tickets</div>
+  </header>
+
+  <section class="kpi-grid" id="kpis"></section>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>Root-Cause Category Volume &amp; Pareto Share</h2>
+      <div id="pareto-bars"></div>
+    </div>
+    <div class="card">
+      <h2>Carrier Partner SLA Performance</h2>
+      <table id="carrier-table"></table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>Weekly Ticket &amp; MTTR Turnaround Trend</h2>
+      <table id="weekly-table"></table>
+    </div>
+    <div class="card">
+      <h2>High-Touch Repeat Escalation Accounts (&gt;2 SLA Breaches)</h2>
+      <table id="accounts-table"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  "kpis": {
+    "total_tickets": 1200,
+    "sla_compliance_pct": 92.33,
+    "avg_mttr_hours": 8.42,
+    "avg_csat": 4.61,
+    "escalated_count": 305
+  },
+  "pareto": [
+    {
+      "issue_category": "Porting/LNP Rejection",
+      "ticket_volume": 315,
+      "volume_share_pct": 26.25,
+      "cumulative_pareto_pct": 26.25,
+      "escalation_count": 80,
+      "escalation_rate_pct": 25.4,
+      "breach_count": 20,
+      "breach_rate_pct": 6.35,
+      "avg_resolution_hours": 9.09
+    },
+    {
+      "issue_category": "Sender ID / DLT Registration",
+      "ticket_volume": 253,
+      "volume_share_pct": 21.08,
+      "cumulative_pareto_pct": 47.33,
+      "escalation_count": 59,
+      "escalation_rate_pct": 23.32,
+      "breach_count": 22,
+      "breach_rate_pct": 8.7,
+      "avg_resolution_hours": 9.27
+    },
+    {
+      "issue_category": "API Webhook 4xx/5xx Error",
+      "ticket_volume": 238,
+      "volume_share_pct": 19.83,
+      "cumulative_pareto_pct": 67.17,
+      "escalation_count": 56,
+      "escalation_rate_pct": 23.53,
+      "breach_count": 25,
+      "breach_rate_pct": 10.5,
+      "avg_resolution_hours": 7.14
+    },
+    {
+      "issue_category": "NACH Mandate Exception",
+      "ticket_volume": 159,
+      "volume_share_pct": 13.25,
+      "cumulative_pareto_pct": 80.42,
+      "escalation_count": 33,
+      "escalation_rate_pct": 20.75,
+      "breach_count": 8,
+      "breach_rate_pct": 5.03,
+      "avg_resolution_hours": 7.29
+    },
+    {
+      "issue_category": "Toll-Free Verification",
+      "ticket_volume": 142,
+      "volume_share_pct": 11.83,
+      "cumulative_pareto_pct": 92.25,
+      "escalation_count": 33,
+      "escalation_rate_pct": 23.24,
+      "breach_count": 11,
+      "breach_rate_pct": 7.75,
+      "avg_resolution_hours": 10.89
+    },
+    {
+      "issue_category": "Carrier Outage",
+      "ticket_volume": 93,
+      "volume_share_pct": 7.75,
+      "cumulative_pareto_pct": 100.0,
+      "escalation_count": 44,
+      "escalation_rate_pct": 47.31,
+      "breach_count": 6,
+      "breach_rate_pct": 6.45,
+      "avg_resolution_hours": 5.26
+    }
+  ],
+  "carriers": [
+    {
+      "carrier_id": "CAR-06",
+      "carrier_name": "Twilio Super Network",
+      "region": "Global",
+      "partner_tier": "Core Network",
+      "target_carrier_sla_hours": 4.0,
+      "total_tickets": 198,
+      "escalated_tickets": 44,
+      "sla_breaches": 8,
+      "sla_compliance_pct": 95.96,
+      "mean_frt_minutes": 50.9,
+      "mean_mttr_hours": 7.14,
+      "avg_csat": 4.65,
+      "carrier_sla_rank": 1
+    },
+    {
+      "carrier_id": "CAR-02",
+      "carrier_name": "Jio",
+      "region": "India",
+      "partner_tier": "Tier-1",
+      "target_carrier_sla_hours": 8.0,
+      "total_tickets": 270,
+      "escalated_tickets": 60,
+      "sla_breaches": 13,
+      "sla_compliance_pct": 95.19,
+      "mean_frt_minutes": 55.6,
+      "mean_mttr_hours": 8.45,
+      "avg_csat": 4.67,
+      "carrier_sla_rank": 2
+    },
+    {
+      "carrier_id": "CAR-05",
+      "carrier_name": "Verizon",
+      "region": "North America",
+      "partner_tier": "Tier-1",
+      "target_carrier_sla_hours": 6.0,
+      "total_tickets": 139,
+      "escalated_tickets": 36,
+      "sla_breaches": 8,
+      "sla_compliance_pct": 94.24,
+      "mean_frt_minutes": 55.0,
+      "mean_mttr_hours": 8.31,
+      "avg_csat": 4.65,
+      "carrier_sla_rank": 3
+    },
+    {
+      "carrier_id": "CAR-01",
+      "carrier_name": "Airtel",
+      "region": "India",
+      "partner_tier": "Tier-1",
+      "target_carrier_sla_hours": 8.0,
+      "total_tickets": 266,
+      "escalated_tickets": 68,
+      "sla_breaches": 21,
+      "sla_compliance_pct": 92.11,
+      "mean_frt_minutes": 51.6,
+      "mean_mttr_hours": 8.67,
+      "avg_csat": 4.59,
+      "carrier_sla_rank": 4
+    },
+    {
+      "carrier_id": "CAR-04",
+      "carrier_name": "AT&T",
+      "region": "North America",
+      "partner_tier": "Tier-1",
+      "target_carrier_sla_hours": 6.0,
+      "total_tickets": 160,
+      "escalated_tickets": 40,
+      "sla_breaches": 14,
+      "sla_compliance_pct": 91.25,
+      "mean_frt_minutes": 45.7,
+      "mean_mttr_hours": 7.66,
+      "avg_csat": 4.62,
+      "carrier_sla_rank": 5
+    },
+    {
+      "carrier_id": "CAR-03",
+      "carrier_name": "Vodafone Idea",
+      "region": "India",
+      "partner_tier": "Tier-2",
+      "target_carrier_sla_hours": 10.0,
+      "total_tickets": 167,
+      "escalated_tickets": 57,
+      "sla_breaches": 28,
+      "sla_compliance_pct": 83.23,
+      "mean_frt_minutes": 47.2,
+      "mean_mttr_hours": 10.29,
+      "avg_csat": 4.47,
+      "carrier_sla_rank": 6
+    }
+  ],
+  "weekly": [
+    {
+      "week_bucket": "2026-W32",
+      "week_start_date": "2026-08-10",
+      "total_tickets": 96,
+      "resolved_count": 96,
+      "backlog_count": 0,
+      "sla_breaches": 5,
+      "weekly_sla_compliance_pct": 94.79,
+      "avg_mttr_hours": 8.16,
+      "avg_target_sla_hours": 21.25
+    },
+    {
+      "week_bucket": "2026-W33",
+      "week_start_date": "2026-08-17",
+      "total_tickets": 91,
+      "resolved_count": 91,
+      "backlog_count": 0,
+      "sla_breaches": 3,
+      "weekly_sla_compliance_pct": 96.7,
+      "avg_mttr_hours": 7.5,
+      "avg_target_sla_hours": 21.93
+    },
+    {
+      "week_bucket": "2026-W34",
+      "week_start_date": "2026-08-24",
+      "total_tickets": 119,
+      "resolved_count": 119,
+      "backlog_count": 0,
+      "sla_breaches": 7,
+      "weekly_sla_compliance_pct": 94.12,
+      "avg_mttr_hours": 8.11,
+      "avg_target_sla_hours": 20.71
+    },
+    {
+      "week_bucket": "2026-W35",
+      "week_start_date": "2026-08-31",
+      "total_tickets": 116,
+      "resolved_count": 116,
+      "backlog_count": 0,
+      "sla_breaches": 9,
+      "weekly_sla_compliance_pct": 92.24,
+      "avg_mttr_hours": 8.56,
+      "avg_target_sla_hours": 21.83
+    },
+    {
+      "week_bucket": "2026-W36",
+      "week_start_date": "2026-09-07",
+      "total_tickets": 84,
+      "resolved_count": 84,
+      "backlog_count": 0,
+      "sla_breaches": 7,
+      "weekly_sla_compliance_pct": 91.67,
+      "avg_mttr_hours": 7.35,
+      "avg_target_sla_hours": 19.62
+    },
+    {
+      "week_bucket": "2026-W37",
+      "week_start_date": "2026-09-14",
+      "total_tickets": 106,
+      "resolved_count": 106,
+      "backlog_count": 0,
+      "sla_breaches": 7,
+      "weekly_sla_compliance_pct": 93.4,
+      "avg_mttr_hours": 9.03,
+      "avg_target_sla_hours": 23.06
+    },
+    {
+      "week_bucket": "2026-W38",
+      "week_start_date": "2026-09-21",
+      "total_tickets": 97,
+      "resolved_count": 97,
+      "backlog_count": 0,
+      "sla_breaches": 7,
+      "weekly_sla_compliance_pct": 92.78,
+      "avg_mttr_hours": 6.7,
+      "avg_target_sla_hours": 18.06
+    },
+    {
+      "week_bucket": "2026-W39",
+      "week_start_date": "2026-09-28",
+      "total_tickets": 97,
+      "resolved_count": 97,
+      "backlog_count": 0,
+      "sla_breaches": 10,
+      "weekly_sla_compliance_pct": 89.69,
+      "avg_mttr_hours": 9.47,
+      "avg_target_sla_hours": 21.65
+    },
+    {
+      "week_bucket": "2026-W40",
+      "week_start_date": "2026-10-05",
+      "total_tickets": 94,
+      "resolved_count": 94,
+      "backlog_count": 0,
+      "sla_breaches": 6,
+      "weekly_sla_compliance_pct": 93.62,
+      "avg_mttr_hours": 10.03,
+      "avg_target_sla_hours": 22.85
+    },
+    {
+      "week_bucket": "2026-W41",
+      "week_start_date": "2026-10-12",
+      "total_tickets": 116,
+      "resolved_count": 116,
+      "backlog_count": 0,
+      "sla_breaches": 8,
+      "weekly_sla_compliance_pct": 93.1,
+      "avg_mttr_hours": 8.5,
+      "avg_target_sla_hours": 20.45
+    },
+    {
+      "week_bucket": "2026-W42",
+      "week_start_date": "2026-10-19",
+      "total_tickets": 73,
+      "resolved_count": 73,
+      "backlog_count": 0,
+      "sla_breaches": 9,
+      "weekly_sla_compliance_pct": 87.67,
+      "avg_mttr_hours": 9.92,
+      "avg_target_sla_hours": 18.79
+    },
+    {
+      "week_bucket": "2026-W43",
+      "week_start_date": "2026-10-26",
+      "total_tickets": 100,
+      "resolved_count": 89,
+      "backlog_count": 11,
+      "sla_breaches": 14,
+      "weekly_sla_compliance_pct": 86.0,
+      "avg_mttr_hours": 8.01,
+      "avg_target_sla_hours": 18.96
+    },
+    {
+      "week_bucket": "2026-W44",
+      "week_start_date": "2026-11-02",
+      "total_tickets": 11,
+      "resolved_count": 6,
+      "backlog_count": 5,
+      "sla_breaches": 0,
+      "weekly_sla_compliance_pct": 100.0,
+      "avg_mttr_hours": 5.96,
+      "avg_target_sla_hours": 20.36
+    }
+  ],
+  "repeat_accounts": [
+    {
+      "account_id": "ACC-102",
+      "account_name": "PaySwift Technologies",
+      "total_tickets": 162,
+      "total_escalations": 50,
+      "total_sla_breaches": 14,
+      "breach_rate_pct": 8.6,
+      "avg_mttr_hours": 9.15,
+      "avg_csat": 4.56,
+      "recurring_issue_areas": "Porting/LNP Rejection,Sender ID / DLT Registration,Toll-Free Verification,Carrier Outage,API Webhook 4xx/5xx Error,NACH Mandate Exception",
+      "risk_rank": 1
+    },
+    {
+      "account_id": "ACC-103",
+      "account_name": "CloudCart Global",
+      "total_tickets": 127,
+      "total_escalations": 38,
+      "total_sla_breaches": 12,
+      "breach_rate_pct": 9.4,
+      "avg_mttr_hours": 8.22,
+      "avg_csat": 4.59,
+      "recurring_issue_areas": "Porting/LNP Rejection,Toll-Free Verification,NACH Mandate Exception,Carrier Outage,Sender ID / DLT Registration,API Webhook 4xx/5xx Error",
+      "risk_rank": 2
+    },
+    {
+      "account_id": "ACC-101",
+      "account_name": "FinServe India Pvt Ltd",
+      "total_tickets": 148,
+      "total_escalations": 32,
+      "total_sla_breaches": 11,
+      "breach_rate_pct": 7.4,
+      "avg_mttr_hours": 7.91,
+      "avg_csat": 4.65,
+      "recurring_issue_areas": "Sender ID / DLT Registration,NACH Mandate Exception,Porting/LNP Rejection,API Webhook 4xx/5xx Error,Toll-Free Verification,Carrier Outage",
+      "risk_rank": 3
+    },
+    {
+      "account_id": "ACC-104",
+      "account_name": "QuickLend Microfinance",
+      "total_tickets": 127,
+      "total_escalations": 33,
+      "total_sla_breaches": 10,
+      "breach_rate_pct": 7.9,
+      "avg_mttr_hours": 8.28,
+      "avg_csat": 4.61,
+      "recurring_issue_areas": "NACH Mandate Exception,Porting/LNP Rejection,API Webhook 4xx/5xx Error,Sender ID / DLT Registration,Carrier Outage,Toll-Free Verification",
+      "risk_rank": 4
+    },
+    {
+      "account_id": "ACC-106",
+      "account_name": "BharatLogistics Corp",
+      "total_tickets": 103,
+      "total_escalations": 30,
+      "total_sla_breaches": 9,
+      "breach_rate_pct": 8.7,
+      "avg_mttr_hours": 9.14,
+      "avg_csat": 4.62,
+      "recurring_issue_areas": "Porting/LNP Rejection,API Webhook 4xx/5xx Error,Sender ID / DLT Registration,Carrier Outage,NACH Mandate Exception,Toll-Free Verification",
+      "risk_rank": 5
+    },
+    {
+      "account_id": "ACC-110",
+      "account_name": "OmniRetail Solutions",
+      "total_tickets": 82,
+      "total_escalations": 25,
+      "total_sla_breaches": 9,
+      "breach_rate_pct": 11.0,
+      "avg_mttr_hours": 10.08,
+      "avg_csat": 4.59,
+      "recurring_issue_areas": "Porting/LNP Rejection,API Webhook 4xx/5xx Error,Toll-Free Verification,Sender ID / DLT Registration,NACH Mandate Exception,Carrier Outage",
+      "risk_rank": 6
+    },
+    {
+      "account_id": "ACC-105",
+      "account_name": "MedConnect Telehealth",
+      "total_tickets": 87,
+      "total_escalations": 24,
+      "total_sla_breaches": 8,
+      "breach_rate_pct": 9.2,
+      "avg_mttr_hours": 9.48,
+      "avg_csat": 4.59,
+      "recurring_issue_areas": "Porting/LNP Rejection,API Webhook 4xx/5xx Error,NACH Mandate Exception,Toll-Free Verification,Sender ID / DLT Registration,Carrier Outage",
+      "risk_rank": 7
+    },
+    {
+      "account_id": "ACC-111",
+      "account_name": "SecureAuth Systems",
+      "total_tickets": 76,
+      "total_escalations": 19,
+      "total_sla_breaches": 6,
+      "breach_rate_pct": 7.9,
+      "avg_mttr_hours": 8.09,
+      "avg_csat": 4.6,
+      "recurring_issue_areas": "Sender ID / DLT Registration,Porting/LNP Rejection,API Webhook 4xx/5xx Error,NACH Mandate Exception,Carrier Outage,Toll-Free Verification",
+      "risk_rank": 8
+    },
+    {
+      "account_id": "ACC-107",
+      "account_name": "NovaBank Digital",
+      "total_tickets": 97,
+      "total_escalations": 19,
+      "total_sla_breaches": 5,
+      "breach_rate_pct": 5.2,
+      "avg_mttr_hours": 7.45,
+      "avg_csat": 4.62,
+      "recurring_issue_areas": "API Webhook 4xx/5xx Error,Porting/LNP Rejection,Sender ID / DLT Registration,Carrier Outage,Toll-Free Verification,NACH Mandate Exception",
+      "risk_rank": 9
+    },
+    {
+      "account_id": "ACC-112",
+      "account_name": "Apex Insurance Hub",
+      "total_tickets": 54,
+      "total_escalations": 12,
+      "total_sla_breaches": 4,
+      "breach_rate_pct": 7.4,
+      "avg_mttr_hours": 8.36,
+      "avg_csat": 4.59,
+      "recurring_issue_areas": "NACH Mandate Exception,Sender ID / DLT Registration,Porting/LNP Rejection,Toll-Free Verification,Carrier Outage,API Webhook 4xx/5xx Error",
+      "risk_rank": 10
+    },
+    {
+      "account_id": "ACC-108",
+      "account_name": "RidePulse Mobility",
+      "total_tickets": 74,
+      "total_escalations": 12,
+      "total_sla_breaches": 3,
+      "breach_rate_pct": 4.1,
+      "avg_mttr_hours": 7.76,
+      "avg_csat": 4.63,
+      "recurring_issue_areas": "Toll-Free Verification,Porting/LNP Rejection,API Webhook 4xx/5xx Error,Carrier Outage,NACH Mandate Exception,Sender ID / DLT Registration",
+      "risk_rank": 11
+    }
+  ]
+};
+
+document.getElementById("kpis").innerHTML = `
+  <div class="kpi"><div class="kpi-label">Total Tickets</div><div class="kpi-val" style="color:var(--blue)">${DATA.kpis.total_tickets.toLocaleString()}</div><div class="kpi-sub">12-Week Operational Period</div></div>
+  <div class="kpi green"><div class="kpi-label">SLA Compliance</div><div class="kpi-val" style="color:var(--green)">${DATA.kpis.sla_compliance_pct}%</div><div class="kpi-sub">Target Floor: 90.0%</div></div>
+  <div class="kpi amber"><div class="kpi-label">Avg Resolution (MTTR)</div><div class="kpi-val" style="color:var(--amber)">${DATA.kpis.avg_mttr_hours} hrs</div><div class="kpi-sub">Escalated: ${DATA.kpis.escalated_count} tickets</div></div>
+  <div class="kpi purple"><div class="kpi-label">Average CSAT</div><div class="kpi-val" style="color:var(--purple)">${DATA.kpis.avg_csat} / 5.0</div><div class="kpi-sub">Resolved Ticket Surveys</div></div>
+`;
+
+const maxVol = Math.max(...DATA.pareto.map(r => r.ticket_volume));
+document.getElementById("pareto-bars").innerHTML = DATA.pareto.map(r => `
+  <div class="bar-row">
+    <div class="bar-meta">
+      <span>${r.issue_category}</span>
+      <span>${r.ticket_volume} tickets (${r.volume_share_pct}% | Breach: ${r.breach_rate_pct}%)</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(r.ticket_volume/maxVol)*100}%;background:var(--blue)"></div></div>
+  </div>
+`).join("");
+
+document.getElementById("carrier-table").innerHTML = `
+  <thead><tr><th>Carrier</th><th>Region</th><th>Tickets</th><th>SLA %</th><th>Mean MTTR</th></tr></thead>
+  <tbody>${DATA.carriers.map(c => {
+    const cls = c.sla_compliance_pct >= 94 ? "pill-ok" : (c.sla_compliance_pct >= 90 ? "pill-warn" : "pill-bad");
+    return `<tr><td>${c.carrier_name}</td><td>${c.region}</td><td>${c.total_tickets}</td><td><span class="pill ${cls}">${c.sla_compliance_pct}%</span></td><td>${c.mean_mttr_hours}h</td></tr>`;
+  }).join("")}</tbody>
+`;
+
+document.getElementById("weekly-table").innerHTML = `
+  <thead><tr><th>Week</th><th>Total</th><th>Resolved</th><th>Backlog</th><th>SLA %</th><th>MTTR</th></tr></thead>
+  <tbody>${DATA.weekly.slice(-8).map(w => `
+    <tr><td>${w.week_bucket}</td><td>${w.total_tickets}</td><td>${w.resolved_count}</td><td>${w.backlog_count}</td><td>${w.weekly_sla_compliance_pct}%</td><td>${w.avg_mttr_hours}h</td></tr>
+  `).join("")}</tbody>
+`;
+
+document.getElementById("accounts-table").innerHTML = `
+  <thead><tr><th>Account</th><th>Tickets</th><th>Breaches</th><th>Breach %</th><th>CSAT</th></tr></thead>
+  <tbody>${DATA.repeat_accounts.slice(0, 8).map(a => `
+    <tr><td>${a.account_name}</td><td>${a.total_tickets}</td><td><span class="pill pill-bad">${a.total_sla_breaches}</span></td><td>${a.breach_rate_pct}%</td><td>${a.avg_csat}</td></tr>
+  `).join("")}</tbody>
+`;
+</script>
+</body>
+</html>

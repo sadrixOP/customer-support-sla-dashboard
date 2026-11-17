@@ -1,0 +1,25 @@
+issue_category,priority,total_tickets,resolved_tickets,sla_breaches,sla_compliance_pct,avg_first_response_min,avg_mttr_hours,avg_csat_score,breach_severity_rank
+Porting/LNP Rejection,P1 - Critical,44,44,4,90.91,11.7,2.83,4.62,3
+NACH Mandate Exception,P1 - Critical,20,18,2,90.0,11.8,2.71,4.64,1
+API Webhook 4xx/5xx Error,P1 - Critical,21,21,2,90.48,10.1,2.16,4.54,2
+Sender ID / DLT Registration,P1 - Critical,31,31,2,93.55,10.7,2.86,4.68,4
+Carrier Outage,P1 - Critical,12,12,0,100.0,10.3,1.43,4.68,5
+Toll-Free Verification,P1 - Critical,15,15,0,100.0,10.4,3.58,4.67,5
+Sender ID / DLT Registration,P2 - High,75,73,8,89.33,25.6,5.23,4.56,1
+Porting/LNP Rejection,P2 - High,90,89,8,91.11,23.4,5.56,4.59,2
+API Webhook 4xx/5xx Error,P2 - High,71,71,6,91.55,25.1,3.45,4.58,4
+Toll-Free Verification,P2 - High,46,45,4,91.3,24.7,6.36,4.65,3
+NACH Mandate Exception,P2 - High,51,50,3,94.12,25.4,4.42,4.6,6
+Carrier Outage,P2 - High,28,28,2,92.86,25.7,3.54,4.62,5
+API Webhook 4xx/5xx Error,P3 - Medium,116,114,13,88.79,57.5,8.62,4.58,1
+Sender ID / DLT Registration,P3 - Medium,98,96,8,91.84,62.8,10.69,4.64,4
+Porting/LNP Rejection,P3 - Medium,129,128,6,95.35,56.0,11.53,4.61,6
+Toll-Free Verification,P3 - Medium,60,60,5,91.67,54.7,13.49,4.56,3
+Carrier Outage,P3 - Medium,35,34,3,91.43,60.2,6.4,4.63,2
+NACH Mandate Exception,P3 - Medium,57,57,3,94.74,57.9,9.92,4.6,5
+API Webhook 4xx/5xx Error,P4 - Low,30,30,4,86.67,107.8,13.76,4.56,1
+Sender ID / DLT Registration,P4 - Low,49,48,4,91.84,107.4,16.72,4.67,3
+Toll-Free Verification,P4 - Low,21,21,2,90.48,129.4,18.38,4.67,2
+Porting/LNP Rejection,P4 - Low,52,50,2,96.15,105.9,14.65,4.63,5
+Carrier Outage,P4 - Low,18,18,1,94.44,111.8,8.35,4.62,4
+NACH Mandate Exception,P4 - Low,31,31,0,100.0,117.3,9.74,4.67,6

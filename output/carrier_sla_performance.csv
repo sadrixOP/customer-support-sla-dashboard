@@ -1,0 +1,7 @@
+carrier_id,carrier_name,region,partner_tier,target_carrier_sla_hours,total_tickets,escalated_tickets,sla_breaches,sla_compliance_pct,mean_frt_minutes,mean_mttr_hours,avg_csat,carrier_sla_rank
+CAR-06,Twilio Super Network,Global,Core Network,4.0,198,44,8,95.96,50.9,7.14,4.65,1
+CAR-02,Jio,India,Tier-1,8.0,270,60,13,95.19,55.6,8.45,4.67,2
+CAR-05,Verizon,North America,Tier-1,6.0,139,36,8,94.24,55.0,8.31,4.65,3
+CAR-01,Airtel,India,Tier-1,8.0,266,68,21,92.11,51.6,8.67,4.59,4
+CAR-04,AT&T,North America,Tier-1,6.0,160,40,14,91.25,45.7,7.66,4.62,5
+CAR-03,Vodafone Idea,India,Tier-2,10.0,167,57,28,83.23,47.2,10.29,4.47,6

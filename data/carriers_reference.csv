@@ -1,0 +1,7 @@
+carrier_id,carrier_name,region,partner_tier,target_carrier_sla_hours
+CAR-01,Airtel,India,Tier-1,8.0
+CAR-02,Jio,India,Tier-1,8.0
+CAR-03,Vodafone Idea,India,Tier-2,10.0
+CAR-04,AT&T,North America,Tier-1,6.0
+CAR-05,Verizon,North America,Tier-1,6.0
+CAR-06,Twilio Super Network,Global,Core Network,4.0

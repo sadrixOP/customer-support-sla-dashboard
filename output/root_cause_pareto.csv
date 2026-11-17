@@ -1,0 +1,7 @@
+issue_category,ticket_volume,volume_share_pct,cumulative_pareto_pct,escalation_count,escalation_rate_pct,breach_count,breach_rate_pct,avg_resolution_hours
+Porting/LNP Rejection,315,26.25,26.25,80,25.4,20,6.35,9.09
+Sender ID / DLT Registration,253,21.08,47.33,59,23.32,22,8.7,9.27
+API Webhook 4xx/5xx Error,238,19.83,67.17,56,23.53,25,10.5,7.14
+NACH Mandate Exception,159,13.25,80.42,33,20.75,8,5.03,7.29
+Toll-Free Verification,142,11.83,92.25,33,23.24,11,7.75,10.89
+Carrier Outage,93,7.75,100.0,44,47.31,6,6.45,5.26

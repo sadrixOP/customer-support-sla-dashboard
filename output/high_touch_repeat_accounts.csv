@@ -1,0 +1,12 @@
+account_id,account_name,total_tickets,total_escalations,total_sla_breaches,breach_rate_pct,avg_mttr_hours,avg_csat,recurring_issue_areas,risk_rank
+ACC-102,PaySwift Technologies,162,50,14,8.6,9.15,4.56,"Porting/LNP Rejection,Sender ID / DLT Registration,Toll-Free Verification,Carrier Outage,API Webhook 4xx/5xx Error,NACH Mandate Exception",1
+ACC-103,CloudCart Global,127,38,12,9.4,8.22,4.59,"Porting/LNP Rejection,Toll-Free Verification,NACH Mandate Exception,Carrier Outage,Sender ID / DLT Registration,API Webhook 4xx/5xx Error",2
+ACC-101,FinServe India Pvt Ltd,148,32,11,7.4,7.91,4.65,"Sender ID / DLT Registration,NACH Mandate Exception,Porting/LNP Rejection,API Webhook 4xx/5xx Error,Toll-Free Verification,Carrier Outage",3
+ACC-104,QuickLend Microfinance,127,33,10,7.9,8.28,4.61,"NACH Mandate Exception,Porting/LNP Rejection,API Webhook 4xx/5xx Error,Sender ID / DLT Registration,Carrier Outage,Toll-Free Verification",4
+ACC-106,BharatLogistics Corp,103,30,9,8.7,9.14,4.62,"Porting/LNP Rejection,API Webhook 4xx/5xx Error,Sender ID / DLT Registration,Carrier Outage,NACH Mandate Exception,Toll-Free Verification",5
+ACC-110,OmniRetail Solutions,82,25,9,11.0,10.08,4.59,"Porting/LNP Rejection,API Webhook 4xx/5xx Error,Toll-Free Verification,Sender ID / DLT Registration,NACH Mandate Exception,Carrier Outage",6
+ACC-105,MedConnect Telehealth,87,24,8,9.2,9.48,4.59,"Porting/LNP Rejection,API Webhook 4xx/5xx Error,NACH Mandate Exception,Toll-Free Verification,Sender ID / DLT Registration,Carrier Outage",7
+ACC-111,SecureAuth Systems,76,19,6,7.9,8.09,4.6,"Sender ID / DLT Registration,Porting/LNP Rejection,API Webhook 4xx/5xx Error,NACH Mandate Exception,Carrier Outage,Toll-Free Verification",8
+ACC-107,NovaBank Digital,97,19,5,5.2,7.45,4.62,"API Webhook 4xx/5xx Error,Porting/LNP Rejection,Sender ID / DLT Registration,Carrier Outage,Toll-Free Verification,NACH Mandate Exception",9
+ACC-112,Apex Insurance Hub,54,12,4,7.4,8.36,4.59,"NACH Mandate Exception,Sender ID / DLT Registration,Porting/LNP Rejection,Toll-Free Verification,Carrier Outage,API Webhook 4xx/5xx Error",10
+ACC-108,RidePulse Mobility,74,12,3,4.1,7.76,4.63,"Toll-Free Verification,Porting/LNP Rejection,API Webhook 4xx/5xx Error,Carrier Outage,NACH Mandate Exception,Sender ID / DLT Registration",11
